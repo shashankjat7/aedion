@@ -1,4 +1,4 @@
-package com.aedion.app.aedion
+package com.aedion.app
 
 import io.flutter.embedding.android.FlutterActivity
 

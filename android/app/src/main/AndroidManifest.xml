@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.aedion.app.aedion">
+    package="com.aedion.app">
    <application
         android:label="aedion"
         android:name="${applicationName}"
