@@ -38,6 +38,9 @@ dependencies:
   cloud_firestore: ^4.3.1
   firebase_core: ^2.4.1
   google_sign_in: ^5.4.3
+  speech_to_text: ^5.6.1
+  flutter_bloc: ^8.1.1
+  bloc: ^8.1.0
 
 dev_dependencies:
   flutter_test:

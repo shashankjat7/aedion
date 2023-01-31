@@ -1,4 +1,5 @@
 import 'package:aedion/Modules/HomeScreen/views/home_screen_view.dart';
+import 'package:aedion/Modules/Tasks/SubModules/CreateNewTask/views/create_task_view.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -27,7 +28,8 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       routes: {
         SignInView.routeName: (context) => const SignInView(),
-        HomeScreenView.routeName: (context) => const HomeScreenView(),
+        HomeScreenView.routeName: (context) => HomeScreenView(),
+        CreateTaskPageView.routeName: (context) => CreateTaskPageView(),
       },
       initialRoute: initialRoute,
       theme: ThemeData(
