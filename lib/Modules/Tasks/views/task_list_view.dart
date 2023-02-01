@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:aedion/Modules/Tasks/SubModules/TaskDetails/views/task_details_view.dart';
 import 'package:aedion/Modules/Tasks/blocs/task_list_bloc.dart';
 import 'package:aedion/Modules/Tasks/SubModules/CreateNewTask/views/create_task_view.dart';
 import 'package:aedion/Modules/Tasks/models/task_model.dart';
@@ -63,7 +64,14 @@ class TaskListView extends StatelessWidget {
                       child: ListTile(
                         tileColor: Colors.blueGrey.withOpacity(0.2),
                         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => TaskDetailsPageView(task: state.tasks![index]),
+                            ),
+                          );
+                        },
                         title: Text(state.tasks![index].taskTitle),
                         subtitle: Text(
                           state.tasks![index].taskDescription,

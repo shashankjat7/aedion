@@ -52,4 +52,19 @@ class TaskModel {
       userId: snapshot.get('user_id'),
     );
   }
+
+  TaskModel copyWith({
+    int? timeSpent,
+  }) {
+    return TaskModel(
+      taskId: this.taskId,
+      taskTitle: this.taskTitle,
+      taskDescription: this.taskDescription,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+      taskStatus: this.taskStatus,
+      timeSpent: timeSpent ?? this.timeSpent,
+      userId: this.userId,
+    );
+  }
 }
