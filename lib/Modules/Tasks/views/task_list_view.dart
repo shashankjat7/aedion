@@ -12,10 +12,15 @@ class TaskListPageView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => TaskListBloc()..add(TaskListFetch()),
-      child: const SafeArea(
-        child: TaskListView(),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Task List'),
+      ),
+      body: BlocProvider(
+        create: (_) => TaskListBloc()..add(TaskListFetch()),
+        child: const SafeArea(
+          child: TaskListView(),
+        ),
       ),
     );
   }
@@ -64,13 +69,14 @@ class TaskListView extends StatelessWidget {
                       child: ListTile(
                         tileColor: Colors.blueGrey.withOpacity(0.2),
                         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
-                        onTap: () {
-                          Navigator.push(
+                        onTap: () async {
+                          TaskModel? updatedTask = await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => TaskDetailsPageView(task: state.tasks![index]),
                             ),
                           );
+                          context.read<TaskListBloc>().add(TaskListFetch());
                         },
                         title: Text(state.tasks![index].taskTitle),
                         subtitle: Text(
@@ -78,6 +84,7 @@ class TaskListView extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
+                        trailing: Text(state.tasks![index].taskStatus.split('.').last),
                       ),
                     );
                   });

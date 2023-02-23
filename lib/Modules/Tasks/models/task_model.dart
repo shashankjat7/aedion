@@ -53,16 +53,14 @@ class TaskModel {
     );
   }
 
-  TaskModel copyWith({
-    int? timeSpent,
-  }) {
+  TaskModel copyWith({int? timeSpent, String? taskStatus}) {
     return TaskModel(
       taskId: this.taskId,
       taskTitle: this.taskTitle,
       taskDescription: this.taskDescription,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
-      taskStatus: this.taskStatus,
+      taskStatus: taskStatus ?? this.taskStatus,
       timeSpent: timeSpent ?? this.timeSpent,
       userId: this.userId,
     );

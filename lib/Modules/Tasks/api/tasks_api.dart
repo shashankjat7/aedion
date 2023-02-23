@@ -29,4 +29,16 @@ class TasksApi {
       return null;
     }
   }
+
+  Future<bool> updateTaskOnFirebase(String docId, Map<String, dynamic> updatedData) async {
+    DocumentReference task = FirebaseFirestore.instance.collection('Tasks').doc(docId);
+    try {
+      await task.update(updatedData);
+      log('updated task was $docId');
+      return true;
+    } catch (e) {
+      log('Error while updating task to database : $e');
+      return false;
+    }
+  }
 }

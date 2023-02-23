@@ -17,6 +17,9 @@ class RecordAudioView extends StatelessWidget {
       child: BlocBuilder<RecordedTextCubit, RecordState>(
         builder: (context, state) {
           return Scaffold(
+            appBar: AppBar(
+              title: Text('Record Audio'),
+            ),
             floatingActionButton: FloatingActionButton(
               child: const Icon(Icons.mic),
               onPressed: () {

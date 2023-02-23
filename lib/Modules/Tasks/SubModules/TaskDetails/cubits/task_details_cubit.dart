@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:aedion/Modules/Tasks/SubModules/TaskDetails/services/clock.dart';
+import 'package:aedion/Modules/Tasks/api/tasks_api.dart';
 import 'package:aedion/Modules/Tasks/models/task_model.dart';
 import 'package:bloc/bloc.dart';
 
@@ -38,23 +40,65 @@ class TaskDetailsCubit extends Cubit<TaskState> {
     return super.close();
   }
 
-  void _onTaskStarted() {
-    emit(TaskInProgress(task: state.task));
+  void onInit() {
+    if (state.task.taskStatus == TaskStatus.inProgress.toString()) {
+      onTaskStarted(true);
+    }
+  }
+
+  void onTaskStarted(bool isAlreadyRunning) async {
+    int startTime = state.task.timeSpent;
+    if (isAlreadyRunning) {
+      startTime = state.task.timeSpent + ((DateTime.now().millisecondsSinceEpoch ~/ 1000) - state.task.updatedAt);
+    } else {
+      //update in firebase
+      bool isUpdateSuccess = await TasksApi().updateTaskOnFirebase(
+        state.task.taskId,
+        {
+          'updated_at': DateTime.now().millisecondsSinceEpoch ~/ 1000,
+          'status': TaskStatus.inProgress.toString(),
+        },
+      );
+      if (!isUpdateSuccess) {
+        return;
+      }
+    }
+    emit(
+      TaskInProgress(
+        task: state.task.copyWith(taskStatus: TaskStatus.inProgress.toString()),
+      ),
+    );
     _clockSubscription?.cancel();
     _clockSubscription = _clock
         .tick(
-          ticks: state.task.timeSpent,
+          ticks: startTime,
         )
         .listen((duration) => _onClockTicked(duration));
   }
 
-  void _onTaskPaused() {
+  void onTaskPaused() async {
     if (state is TaskInProgress) {
       // update in firebase
 
+      bool isUpdateSuccess = await TasksApi().updateTaskOnFirebase(
+        state.task.taskId,
+        {
+          'updated_at': DateTime.now().millisecondsSinceEpoch ~/ 1000,
+          'status': TaskStatus.idle.toString(),
+          'time_spent': state.task.timeSpent,
+        },
+      );
+      if (!isUpdateSuccess) {
+        return;
+      }
+
       // if success, then pause the clock
       _clockSubscription?.pause();
-      emit(TaskIdle(task: state.task));
+      emit(
+        TaskIdle(
+          task: state.task.copyWith(taskStatus: TaskStatus.idle.toString()),
+        ),
+      );
     }
   }
 

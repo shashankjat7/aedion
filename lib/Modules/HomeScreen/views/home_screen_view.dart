@@ -4,6 +4,7 @@ import 'package:aedion/Constants/route_names.dart';
 import 'package:aedion/Modules/Authentication/views/sign_in_view.dart';
 import 'package:aedion/Modules/HomeScreen/SubModules/HomePage/views/home_page_view.dart';
 import 'package:aedion/Modules/HomeScreen/SubModules/NotesPage/views/notes_page_view.dart';
+import 'package:aedion/Modules/HomeScreen/SubModules/ProfilePage/views/profile_page_view.dart';
 import 'package:aedion/Modules/HomeScreen/SubModules/RecordPage/views/record_audio_view.dart';
 import 'package:aedion/Modules/Tasks/views/task_list_view.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -19,9 +20,10 @@ class HomeScreenView extends StatefulWidget {
 
 class _HomeScreenViewState extends State<HomeScreenView> {
   List<Widget> pages = [
-    const HomePageView(),
+    HomePageView(),
     const RecordAudioView(),
     const TaskListPageView(),
+    const ProfilePageView(),
   ];
 
   int _currentIndex = 0;
@@ -29,23 +31,12 @@ class _HomeScreenViewState extends State<HomeScreenView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Home Screen'),
-        actions: [
-          IconButton(
-            onPressed: () {
-              FirebaseAuth.instance.signOut();
-              Navigator.popAndPushNamed(context, SignInView.routeName);
-            },
-            icon: const Icon(Icons.logout),
-          ),
-        ],
-      ),
       body: IndexedStack(
         index: _currentIndex,
         children: pages,
       ),
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         currentIndex: _currentIndex,
         onTap: (index) {
           setState(() {
@@ -64,6 +55,10 @@ class _HomeScreenViewState extends State<HomeScreenView> {
           BottomNavigationBarItem(
             icon: Icon(Icons.description),
             label: 'Tasks',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
           ),
         ],
       ),

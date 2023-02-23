@@ -21,7 +21,7 @@ class TaskDetailsPageView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => TaskDetailsCubit(clock: Clock(), task: task),
+      create: (_) => TaskDetailsCubit(clock: Clock(), task: task)..onInit(),
       child: const TaskDetailsPage(),
     );
   }
@@ -35,7 +35,7 @@ class TaskDetailsPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: CustomColors.yellowish,
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(80),
+        preferredSize: const Size.fromHeight(80),
         child: AppBar(
           backgroundColor: CustomColors.yellowish,
           elevation: 0,
@@ -50,7 +50,7 @@ class TaskDetailsPage extends StatelessWidget {
             child: GestureDetector(
               onTap: () {
                 log('back button was tapped');
-                Navigator.pop(context);
+                Navigator.pop(context, context.read<TaskDetailsCubit>().state.task);
               },
               child: const Icon(
                 Icons.expand_circle_down,
@@ -71,47 +71,7 @@ class TaskDetailsPage extends StatelessWidget {
           ],
         ),
       ),
-      bottomSheet: Material(
-        color: CustomColors.yellowish,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
-          child: Container(
-            height: 70,
-            decoration: const BoxDecoration(
-              color: CustomColors.blackish,
-              borderRadius: BorderRadius.all(Radius.circular(40)),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Icon(
-                    Icons.check_circle,
-                    color: CustomColors.definitelyWhite,
-                    size: 70,
-                  ),
-                ),
-                Expanded(
-                  child: Center(
-                    child: Text(
-                      'Start Task',
-                      style: TextStyle(
-                        color: CustomColors.definitelyWhite,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  width: 70,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+      bottomSheet: const _StatusChangeButton(),
       body: BlocBuilder<TaskDetailsCubit, TaskState>(builder: (context, state) {
         return ListView(
           padding: const EdgeInsets.only(left: 10, right: 10, bottom: 100),
@@ -125,7 +85,7 @@ class TaskDetailsPage extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 decoration: BoxDecoration(
                   border: Border.all(color: CustomColors.blackish),
-                  borderRadius: BorderRadius.all(Radius.circular(30)),
+                  borderRadius: const BorderRadius.all(Radius.circular(30)),
                 ),
                 child: Text(
                   state.task.taskStatus.split('.').last.toUpperCase(),
@@ -196,7 +156,7 @@ class TaskDetailsPage extends StatelessWidget {
                         color: Colors.black.withOpacity(0.4),
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 15,
                     ),
                     CachedNetworkImage(
@@ -257,5 +217,71 @@ class TaskDetailsPage extends StatelessWidget {
         );
       }),
     );
+  }
+}
+
+class _StatusChangeButton extends StatelessWidget {
+  const _StatusChangeButton({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<TaskDetailsCubit, TaskState>(builder: (context, state) {
+      return Material(
+        color: CustomColors.yellowish,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+          child: Material(
+            color: CustomColors.blackish,
+            borderRadius: const BorderRadius.all(Radius.circular(40)),
+            child: InkWell(
+              borderRadius: const BorderRadius.all(Radius.circular(40)),
+              splashColor: CustomColors.definitelyWhite,
+              onTap: () {
+                if (state is TaskIdle) {
+                  context.read<TaskDetailsCubit>().onTaskStarted(false);
+                } else if (state is TaskInProgress) {
+                  context.read<TaskDetailsCubit>().onTaskPaused();
+                }
+              },
+              child: Container(
+                height: 70,
+                decoration: const BoxDecoration(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.all(Radius.circular(40)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Icon(
+                        Icons.check_circle,
+                        color: CustomColors.definitelyWhite,
+                        size: 70,
+                      ),
+                    ),
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          state is TaskIdle ? 'Start Task' : 'Pause Task',
+                          style: const TextStyle(
+                            color: CustomColors.definitelyWhite,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
+                      width: 70,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    });
   }
 }

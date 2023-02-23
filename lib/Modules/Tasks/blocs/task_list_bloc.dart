@@ -16,6 +16,12 @@ class TaskListTaskAdded extends TaskListEvent {
   const TaskListTaskAdded({super.task});
 }
 
+class TaskListUpdated extends TaskListEvent {
+  final TaskModel updateTask;
+  final int index;
+  const TaskListUpdated({required this.updateTask, required this.index});
+}
+
 // class TaskListStarted extends TaskListEvent {}
 //
 // class TaskListLoaded extends TaskListEvent {}
@@ -45,6 +51,7 @@ class TaskListBloc extends Bloc<TaskListEvent, TaskListState> {
   TaskListBloc() : super(const TaskListLoading()) {
     on<TaskListFetch>(_fetchTaskList);
     on<TaskListTaskAdded>(_addTaskToList);
+    on<TaskListUpdated>(_updateTask);
   }
 
   Future<void> _fetchTaskList(TaskListEvent event, Emitter<TaskListState> emit) async {
@@ -59,6 +66,12 @@ class TaskListBloc extends Bloc<TaskListEvent, TaskListState> {
       return;
     }
     tasks.add(event.task!);
+    emit(TaskListLoadingSuccess(tasks: tasks));
+  }
+
+  void _updateTask(TaskListUpdated event, Emitter<TaskListState> emit) {
+    List<TaskModel>? tasks = state.tasks;
+    tasks![event.index] = event.updateTask;
     emit(TaskListLoadingSuccess(tasks: tasks));
   }
 }
