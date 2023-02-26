@@ -1,77 +1,45 @@
+import 'dart:developer';
+
 import 'package:aedion/Modules/Tasks/api/tasks_api.dart';
 import 'package:aedion/Modules/Tasks/models/task_model.dart';
+import 'package:aedion/Modules/Tasks/service/background_clock_service.dart';
 import 'package:bloc/bloc.dart';
-import 'package:flutter/material.dart';
 
-class TaskListEvent {
-  final TaskModel? task;
-  const TaskListEvent({
-    this.task,
-  });
-}
-
-class TaskListFetch extends TaskListEvent {}
-
-class TaskListTaskAdded extends TaskListEvent {
-  const TaskListTaskAdded({super.task});
-}
-
-class TaskListUpdated extends TaskListEvent {
-  final TaskModel updateTask;
-  final int index;
-  const TaskListUpdated({required this.updateTask, required this.index});
-}
-
-// class TaskListStarted extends TaskListEvent {}
-//
-// class TaskListLoaded extends TaskListEvent {}
-//
-// class TaskListFailed extends TaskListEvent {}
-
-abstract class TaskListState {
-  final List<TaskModel>? tasks;
-  const TaskListState({
-    this.tasks,
-  });
-}
-
-class TaskListLoading extends TaskListState {
-  const TaskListLoading({super.tasks});
-}
-
-class TaskListLoadingSuccess extends TaskListState {
-  const TaskListLoadingSuccess({super.tasks});
-}
-
-class TaskListError extends TaskListState {
-  const TaskListError({super.tasks});
-}
+part 'task_list_state.dart';
 
 class TaskListBloc extends Bloc<TaskListEvent, TaskListState> {
-  TaskListBloc() : super(const TaskListLoading()) {
+  TaskListBloc() : super(TaskListState()) {
     on<TaskListFetch>(_fetchTaskList);
     on<TaskListTaskAdded>(_addTaskToList);
     on<TaskListUpdated>(_updateTask);
+    on<TaskListAppClosed>(_onAppClosed);
   }
 
-  Future<void> _fetchTaskList(TaskListEvent event, Emitter<TaskListState> emit) async {
+  Future<void> _fetchTaskList(TaskListFetch event, Emitter<TaskListState> emit) async {
     List<TaskModel> taskList = await TasksApi().fetchTaskList();
-    emit(TaskListLoadingSuccess(tasks: taskList));
+    emit(state.copyWith(taskList: taskList, status: TaskListStatus.loaded));
   }
 
-  void _addTaskToList(TaskListEvent event, Emitter<TaskListState> emit) async {
-    List<TaskModel>? tasks = state.tasks;
-    if (tasks == null) {
-      emit(TaskListLoadingSuccess(tasks: [event.task!]));
-      return;
-    }
-    tasks.add(event.task!);
-    emit(TaskListLoadingSuccess(tasks: tasks));
+  void _addTaskToList(TaskListTaskAdded event, Emitter<TaskListState> emit) async {
+    List<TaskModel>? tasks = state.taskList;
+    tasks.add(event.addedTask);
+    emit(state.copyWith(taskList: tasks));
   }
 
   void _updateTask(TaskListUpdated event, Emitter<TaskListState> emit) {
-    List<TaskModel>? tasks = state.tasks;
-    tasks![event.index] = event.updateTask;
-    emit(TaskListLoadingSuccess(tasks: tasks));
+    List<TaskModel>? tasks = state.taskList;
+    tasks[event.index] = event.updateTask;
+    emit(state.copyWith(taskList: tasks));
   }
+
+  void _onAppClosed(TaskListAppClosed event, Emitter<TaskListState> emit) {
+    for (var i in state.taskList) {
+      if (i.taskStatus == TaskStatus.inProgress.toString()) {
+        BackgroundClockService().callBackgroundClock(i);
+        log('this task was in progress : ${i.taskTitle}');
+      }
+    }
+  }
+
+  void _onTaskStarted() {}
 }

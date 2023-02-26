@@ -7,6 +7,8 @@ import 'package:aedion/Modules/Tasks/models/task_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+//TODO: why not just make the task details global
+
 class TaskListPageView extends StatelessWidget {
   const TaskListPageView({Key? key}) : super(key: key);
 
@@ -14,13 +16,10 @@ class TaskListPageView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Task List'),
+        title: const Text('Task List'),
       ),
-      body: BlocProvider(
-        create: (_) => TaskListBloc()..add(TaskListFetch()),
-        child: const SafeArea(
-          child: TaskListView(),
-        ),
+      body: const SafeArea(
+        child: TaskListView(),
       ),
     );
   }
@@ -43,26 +42,26 @@ class TaskListView extends StatelessWidget {
           );
           log('created task returned was : $createdTask');
           if (createdTask != null) {
-            context.read<TaskListBloc>().add(TaskListTaskAdded(task: createdTask));
+            context.read<TaskListBloc>().add(TaskListTaskAdded(addedTask: createdTask));
           }
         },
         child: const Text('+'),
       ),
       body: SafeArea(
         child: BlocBuilder<TaskListBloc, TaskListState>(builder: (context, state) {
-          if (state is TaskListLoading) {
+          if (state.status == TaskListStatus.loading) {
             return const Center(
               child: CircularProgressIndicator(),
             );
-          } else if (state is TaskListLoadingSuccess) {
-            if (state.tasks!.isEmpty) {
+          } else if (state.status == TaskListStatus.loaded) {
+            if (state.taskList.isEmpty) {
               return const Center(
                 child: Text('No Tasks found'),
               );
             } else {
               return ListView.builder(
                   padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
-                  itemCount: state.tasks!.length,
+                  itemCount: state.taskList.length,
                   itemBuilder: (context, index) {
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -73,18 +72,18 @@ class TaskListView extends StatelessWidget {
                           TaskModel? updatedTask = await Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => TaskDetailsPageView(task: state.tasks![index]),
+                              builder: (context) => TaskDetailsPageView(task: state.taskList[index]),
                             ),
                           );
                           context.read<TaskListBloc>().add(TaskListFetch());
                         },
-                        title: Text(state.tasks![index].taskTitle),
+                        title: Text(state.taskList[index].taskTitle),
                         subtitle: Text(
-                          state.tasks![index].taskDescription,
+                          state.taskList[index].taskDescription,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        trailing: Text(state.tasks![index].taskStatus.split('.').last),
+                        trailing: Text(state.taskList[index].taskStatus.split('.').last),
                       ),
                     );
                   });

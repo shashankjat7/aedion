@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:aedion/Modules/Tasks/SubModules/TaskDetails/services/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 enum TaskStatus {
@@ -14,7 +17,7 @@ class TaskModel {
   final int createdAt;
   final int updatedAt;
   final String taskStatus; //Task status
-  final int timeSpent; //seconds
+  final int timeSpent;
 
   TaskModel({
     required this.taskId,

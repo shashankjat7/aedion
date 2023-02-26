@@ -34,9 +34,8 @@ class CompassView extends StatefulWidget {
 }
 
 class _CompassViewState extends State<CompassView> {
-  bool isAligned = false;
-  bool isVolumeOn = true;
   double distance = 0;
+  double turns = 0; // turn the compass initially to this angle to adjust pole
 
   void checkPermission() async {
     Permission _permission = Permission.location;
@@ -56,17 +55,20 @@ class _CompassViewState extends State<CompassView> {
   }
 
   double angleFromCoordinate(double lat1, double long1, double lat2, double long2) {
-    double dLon = (long2 - long1);
+    double dLon = (long1 - long2);
 
     double y = math.sin(dLon) * math.cos(lat2);
     double x = math.cos(lat1) * math.sin(lat2) - math.sin(lat1) * math.cos(lat2) * math.cos(dLon);
 
     double brng = math.atan2(y, x);
 
-    // brng = brng * 57.2958;
-    // brng = (brng + 360) % 360;
+    double degreeAngle = brng * 57.2958;
+    degreeAngle = (degreeAngle + 360) % 360;
+    setState(() {
+      turns = degreeAngle / 360;
+    });
     // brng = 360 - brng; // count degrees counter-clockwise - remove to make clockwise
-    // log('brng is $brng');
+    log('brng is $brng');
 
     return brng;
   }
@@ -89,13 +91,13 @@ class _CompassViewState extends State<CompassView> {
   double angleDifference = 0;
 
   void checkAlignment(double angleDifference) {
-    log('angle is : $angle');
+    // log('angle is : $angle');
     if (angleDifference >= 0 && angleDifference <= 0.01) {
-      if (!context.read<CompassCubit>().state) {
+      if (!context.read<CompassCubit>().state.isHauFound) {
         context.read<CompassCubit>().onHauFound();
       }
     } else {
-      if (context.read<CompassCubit>().state) {
+      if (context.read<CompassCubit>().state.isHauFound) {
         context.read<CompassCubit>().onHauLost();
       }
     }
@@ -104,49 +106,49 @@ class _CompassViewState extends State<CompassView> {
   void setHeartbeat(double angleDifference) {
     if (angleDifference >= 0 && angleDifference <= 0.01) {
       player.play();
-      player.setSpeed(3);
-    } else if (angleDifference > 0.01 && angleDifference <= 0.05) {
-      player.play();
-      player.setSpeed(2.5);
-    } else if (angleDifference > 0.05 && angleDifference <= 0.1) {
-      player.play();
-      player.setSpeed(2);
-    } else if (angleDifference > 0.1 && angleDifference <= 0.15) {
-      player.play();
-      player.setSpeed(1.8);
-    } else if (angleDifference > 0.15 && angleDifference <= 0.2) {
-      player.play();
       player.setSpeed(1.5);
-    } else if (angleDifference > 0.2 && angleDifference <= 0.25) {
-      player.play();
-      player.setSpeed(1);
-    } else if (angleDifference > 0.25 && angleDifference <= 0.3) {
-      player.play();
-      player.setSpeed(0.8);
-    } else if (angleDifference > 0.3 && angleDifference <= 0.35) {
-      player.play();
-      player.setSpeed(0.8);
+      // } else if (angleDifference > 0.01 && angleDifference <= 0.05) {
+      //   player.play();
+      //   player.setSpeed(2.5);
+      // } else if (angleDifference > 0.05 && angleDifference <= 0.1) {
+      //   player.play();
+      //   player.setSpeed(2);
+      // } else if (angleDifference > 0.1 && angleDifference <= 0.15) {
+      //   player.play();
+      //   player.setSpeed(1.8);
+      // } else if (angleDifference > 0.15 && angleDifference <= 0.2) {
+      //   player.play();
+      //   player.setSpeed(1.5);
+      // } else if (angleDifference > 0.2 && angleDifference <= 0.25) {
+      //   player.play();
+      //   player.setSpeed(1);
+      // } else if (angleDifference > 0.25 && angleDifference <= 0.3) {
+      //   player.play();
+      //   player.setSpeed(0.8);
+      // } else if (angleDifference > 0.3 && angleDifference <= 0.35) {
+      //   player.play();
+      //   player.setSpeed(0.8);
     } else {
       player.pause();
     }
   }
 
   void setAngleDifference(double compassTurns) {
-    angleDifference = ((compassTurns - angle).round() - (compassTurns - angle)).abs();
+    // log('compass turns: $compassTurns , angle is : $angle');
+    angleDifference = ((compassTurns - turns).round() - (compassTurns - turns)).abs();
     // log('angle difference is : $angleDifference');
 
     double x = double.parse(angleDifference.toStringAsFixed(2));
-    log('this is decimal : $x');
     checkAlignment(x);
-    if (isVolumeOn) {
+    if (context.read<CompassCubit>().state.isSoundOn) {
       setHeartbeat(x);
     }
   }
 
   void initiateData() {
     setState(() {
-      angle = angleFromCoordinate(28.4529, 77.0399, 28.1098, 75.382761);
-      distance = calculateDistance(28.4529, 77.0399, 28.1098, 75.382761);
+      angle = angleFromCoordinate(28.1098, 75.382761, 28.4529, 77.0399);
+      distance = calculateDistance(28.1098, 75.382761, 28.4529, 77.0399);
       log('angle is : $angle');
     });
     playSound();
@@ -170,40 +172,38 @@ class _CompassViewState extends State<CompassView> {
     return MaterialApp(
       home: Scaffold(
         backgroundColor: Color(0xFFA20913),
-        // backgroundColor: Colors.white,
         appBar: AppBar(
           backgroundColor: Color(0xFFA20913),
           elevation: 0,
           actions: [
-            isVolumeOn
-                ? IconButton(
-                    onPressed: () {
-                      setState(() {
-                        isVolumeOn = false;
+            BlocBuilder<CompassCubit, CompassState>(builder: (context, state) {
+              return state.isSoundOn
+                  ? IconButton(
+                      onPressed: () {
                         player.stop();
-                      });
-                    },
-                    icon: Icon(Icons.volume_off),
-                  )
-                : IconButton(
-                    onPressed: () {
-                      setState(() {
-                        isVolumeOn = true;
-                      });
-                    },
-                    icon: Icon(Icons.volume_up),
-                  )
+                        context.read<CompassCubit>().onSoundOff();
+                      },
+                      icon: const Icon(Icons.volume_off),
+                    )
+                  : IconButton(
+                      onPressed: () {
+                        player.play();
+                        context.read<CompassCubit>().onSoundOn();
+                      },
+                      icon: const Icon(Icons.volume_up),
+                    );
+            }),
           ],
         ),
         body: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             Flexible(
-              child: BlocBuilder<CompassCubit, bool>(
+              child: BlocBuilder<CompassCubit, CompassState>(
                 builder: (context, state) {
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 30),
-                    child: state
+                    child: state.isHauFound
                         ? Text(
                             "You found me baby \n I'm only $distance kms away",
                             style: const TextStyle(
@@ -237,7 +237,7 @@ class _CompassViewState extends State<CompassView> {
                   },
                   compassAsset: Center(
                     child: RotationTransition(
-                      turns: AlwaysStoppedAnimation(angle),
+                      turns: AlwaysStoppedAnimation(turns),
                       child: Container(
                         decoration: const BoxDecoration(
                           image: DecorationImage(

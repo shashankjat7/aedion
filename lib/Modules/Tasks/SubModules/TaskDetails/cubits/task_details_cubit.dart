@@ -6,6 +6,9 @@ import 'package:aedion/Modules/Tasks/api/tasks_api.dart';
 import 'package:aedion/Modules/Tasks/models/task_model.dart';
 import 'package:bloc/bloc.dart';
 
+//TODO : create a different bloc for ongoing tasks and idle tasks, if there are multiple ongoing tasks,update them at the same time.
+//TODO : save timer data in shared preferences.
+
 abstract class TaskState {
   final TaskModel task;
   const TaskState({
