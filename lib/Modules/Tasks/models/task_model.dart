@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:aedion/Modules/Tasks/SubModules/TaskDetails/services/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -67,5 +68,19 @@ class TaskModel {
       timeSpent: timeSpent ?? this.timeSpent,
       userId: this.userId,
     );
+  }
+
+  String string() {
+    Map task = {
+      'task_id': taskId,
+      'title': taskTitle,
+      'description': taskDescription,
+      'created_at': createdAt,
+      'updated_at': updatedAt,
+      'status': taskStatus,
+      'time_spent': timeSpent,
+      'user_id': userId,
+    };
+    return json.encode(task);
   }
 }

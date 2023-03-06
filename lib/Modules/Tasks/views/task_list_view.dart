@@ -7,8 +7,6 @@ import 'package:aedion/Modules/Tasks/models/task_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-//TODO: why not just make the task details global
-
 class TaskListPageView extends StatelessWidget {
   const TaskListPageView({Key? key}) : super(key: key);
 

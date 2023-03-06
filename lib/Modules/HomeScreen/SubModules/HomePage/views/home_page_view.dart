@@ -142,10 +142,11 @@ class _HomePageViewState extends State<HomePageView> with WidgetsBindingObserver
         log('appLifeCycleState inactive');
         break;
       case AppLifecycleState.resumed:
-        // BackgroundClockService().removeBackgroundClock();
+        BackgroundClockService().removeBackgroundClock();
         log('appLifeCycleState resumed');
         break;
       case AppLifecycleState.paused:
+        context.read<TaskListBloc>().add(TaskListAppClosed());
         log('appLifeCycleState paused');
         break;
       case AppLifecycleState.detached:
@@ -166,7 +167,7 @@ class _HomePageViewState extends State<HomePageView> with WidgetsBindingObserver
           children: [
             TextButton(
               onPressed: () {
-                context.read<TaskListBloc>().add(TaskListAppClosed());
+                // context.read<TaskListBloc>().add(TaskListAppClosed());
               },
               child: Text('Start service'),
             ),
